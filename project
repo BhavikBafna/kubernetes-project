@@ -1,0 +1,41 @@
+kubectl create ns bhavik
+cd bhavik
+
+------------------ backend ------------------
+kubectl create deployment backend --image=kharatramesh/mit:databasemit -n bhavik --dry-run -o yaml > backend.yaml
+
+vi backend.yaml
+kubectl create -f backend.yaml
+kubectl get pods -o wide -n bhavik
+
+kubectl exec -it backend-65c9744469-fw7bx bash -n bhavik
+
+mysql -u root -p
+
+---------- mysql commands start -----------
+alter user 'root'@'localhost' identified with mysql_native_password by '123';
+alter user 'root'@'%' identified with mysql_native_password by '123';
+----------- mysql commands end ------------
+
+exit // exit mysql
+exit // exit bash
+
+
+kubectl expose deployment/backend --name=backend --type=ClusterIP --port=3306 -n bhavik
+kubectl get service -n bhavik
+kubectl describe service backend -n bhavik
+
+
+------------------ frontend ------------------
+
+kubectl create deployment frontend --image=kharatramesh/mit:frontendmit -n bhavik --dry-run -o yaml > frontend.yaml
+vi frontend.yaml
+
+kubectl apply -f frontend.yaml
+kubectl get pods -n bhavik
+
+kubectl expose deployment/frontend --name=frontendservice --type=NodePort --port=80 -n bhavik
+kubectl exec -it frontend-7fb8c698c5-9snpg bash -n bhavik
+
+
+kubectl get service -n bhavik
